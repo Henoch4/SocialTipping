@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tipping — Send BOT to the people who make the feed</title>
+<meta name="description" content="Register a handle, receive native BOT tips on-chain, withdraw whenever you want. No platform cut, no payout threshold.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wash:#fdf4f7; --card:#ffffff; --ink:#2a1a24; --mut:#83707b; --line:#f3e1ea;
+  --pink:#db2777; --pink-soft:#fce7f3; --violet:#7c3aed; --violet-soft:#f1e9ff;
+  --r:20px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wash);color:var(--ink);font-family:'Outfit',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(700px 420px at 12% -6%,#fce7f3,transparent 62%),radial-gradient(620px 380px at 96% 4%,#f1e9ff,transparent 60%);
+  background-attachment:fixed}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.03em}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
+.shell{max-width:940px;margin:0 auto;padding:0 clamp(14px,4vw,32px)}
+
+/* floating pill header */
+.pillbar{position:sticky;top:14px;z-index:30;margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px 9px 18px;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:99px;flex-wrap:wrap;box-shadow:0 8px 26px rgba(219,39,119,.07)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;letter-spacing:-.02em}
+.brand i{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(140deg,var(--pink),var(--violet));color:#fff;font-style:normal;font-size:13px}
+.pill-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.net{display:inline-flex;padding:3px;background:var(--pink-soft);border-radius:99px;font-size:11px}
+.net button{padding:5px 11px;border-radius:99px;color:var(--pink);font-weight:600}
+.net button.on{background:var(--pink);color:#fff}
+.net button:disabled{opacity:.4;cursor:not-allowed}
+.who{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:6px}
+.on-dot{width:7px;height:7px;border-radius:50%;background:#f43f5e}
+.on-dot.on{background:#10b981}
+.gbtn{background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:99px}
+.gbtn:hover{filter:brightness(1.2)}
+
+/* hero */
+.hero{text-align:center;padding:56px 0 30px}
+.hero .eyebrow{display:inline-block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--violet);background:var(--violet-soft);padding:6px 13px;border-radius:99px;font-weight:600}
+.hero h1{font-size:clamp(34px,6.4vw,62px);line-height:1;margin:18px auto 0;max-width:15ch;background:linear-gradient(100deg,var(--pink),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);font-size:15.5px;line-height:1.7;max-width:52ch;margin:16px auto 0}
+
+/* composer */
+.composer{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 16px 40px rgba(219,39,119,.07);display:grid;gap:13px}
+.composer h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.crow{display:grid;grid-template-columns:1.4fr .8fr;gap:11px}
+.tipbox{display:grid;grid-template-columns:1fr 1fr auto;gap:9px;align-items:end}
+label{display:grid;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:600}
+input,textarea{background:var(--wash);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:14px;width:100%;resize:none}
+input:focus,textarea:focus{outline:2px solid rgba(219,39,119,.22);border-color:var(--pink)}
+.send{background:linear-gradient(120deg,var(--pink),var(--violet));color:#fff;font-weight:700;font-size:14px;padding:12px 22px;border-radius:12px;white-space:nowrap}
+.send:hover{filter:brightness(1.1)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-size:12px;color:var(--mut);background:var(--card)}
+.chips button:hover{border-color:var(--pink);color:var(--pink)}
+
+/* creators strip */
+.striphead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:40px 0 14px;flex-wrap:wrap}
+.striphead h2{font-size:21px}
+.striphead span{font-size:12.5px;color:var(--mut)}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:11px}
+.person{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:9px;transition:.16s}
+.person:hover{box-shadow:0 10px 24px rgba(219,39,119,.09);transform:translateY(-2px)}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(140deg,var(--pink),var(--violet))}
+.person .h{font-weight:600;font-size:14px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.person .s{font-size:11.5px;color:var(--mut);display:flex;justify-content:space-between}
+.person .amt{font-size:15px;font-weight:700;color:var(--pink);letter-spacing:-.02em}
+
+/* feed */
+.feed{display:grid;gap:10px}
+.tip{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:13px;align-items:start}
+.tip .av{width:32px;height:32px;font-size:13px}
+.tip .main{min-width:0}
+.tip .line1{font-size:13.5px;line-height:1.4}
+.tip .line1 b{font-weight:600}
+.tip .line1 .arrow{color:var(--pink);margin:0 4px}
+.tip .msg{font-size:13px;color:var(--mut);margin-top:5px;line-height:1.55;overflow-wrap:anywhere}
+.tip .meta{font-size:11px;color:var(--mut);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap}
+.tip .amt{font-weight:700;color:var(--pink);font-size:15px;white-space:nowrap;letter-spacing:-.02em}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:36px;text-align:center;color:var(--mut);font-size:13.5px;background:rgba(255,255,255,.6)}
+
+/* my stats */
+.mine{margin-top:34px;background:linear-gradient(135deg,var(--pink-soft),var(--violet-soft));border-radius:var(--r);padding:22px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+.mine .lbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);font-weight:700}
+.mine h3{font-size:20px;margin:6px 0 4px}
+.mine .nums{display:flex;gap:22px;margin-top:12px;flex-wrap:wrap}
+.mine .nums div small{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:2px}
+.mine .nums div b{font-size:19px;font-weight:700}
+.mine .send{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+
+footer{border-top:1px solid var(--line);margin:44px 0 0;padding:22px 0 30px;display:flex;justify-content:space-between;gap:13px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);align-items:center}
+footer b{color:var(--ink)}
+footer a{color:var(--pink);text-decoration:none;border-bottom:1px solid rgba(219,39,119,.3)}
+.fl{display:flex;align-items:center;gap:9px}
+.fl svg{width:17px;height:17px;flex:none}
+.fr{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+#toast{position:fixed;left:50%;bottom:24px;translate:-50% 220%;background:var(--ink);color:#fff;padding:12px 20px;border-radius:99px;font-size:13px;font-weight:500;transition:.3s cubic-bezier(.2,.9,.2,1);max-width:min(92vw,520px);z-index:60;box-shadow:0 16px 34px rgba(42,26,36,.24)}
+#toast.on{translate:-50% 0}
+#toast.err{background:#e11d48}
+
+@media(max-width:760px){
+  .tipbox{grid-template-columns:1fr 1fr}
+  .tipbox .send{grid-column:1/-1}
+  .crow{grid-template-columns:1fr}
+  .hero{padding:36px 0 22px}
+  .mine{grid-template-columns:1fr}
+  .tip{grid-template-columns:auto 1fr;gap:10px}
+  .tip .amt{grid-column:2;justify-self:start}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="pillbar">
+    <div class="brand"><i>♥</i>Tipping</div>
+    <div class="pill-right">
+      <div class="net"><button id="n677" class="on">677</button><button id="n968" disabled title="Testnet pending">968</button></div>
+      <div class="who"><span class="on-dot" id="dot"></span><span class="mono" id="addr">not connected</span></div>
+      <button class="gbtn" id="connect">Connect</button>
+    </div>
+  </div>
+
+  <section class="hero">
+    <span class="eyebrow">Native BOT · zero platform cut</span>
+    <h1>Tip the people behind the feed.</h1>
+    <p>Register a handle once, and anyone can send you BOT with a message attached. Tips land in the contract under your address — withdraw everything whenever you like.</p>
+  </section>
+
+  <div class="composer">
+    <h3>Send a tip</h3>
+    <div class="tipbox">
+      <label>Creator address<input id="tTo" placeholder="0x…"></label>
+      <label>Amount (BOT)<input id="tAmt" type="number" step="0.000001" min="0.000001" placeholder="0.0005"></label>
+      <button class="send" id="tipBtn">Send tip</button>
+    </div>
+    <div class="chips" id="quick">
+      <button data-q="0.0002">0.0002</button>
+      <button data-q="0.0005">0.0005</button>
+      <button data-q="0.001">0.001</button>
+      <button data-q="0.005">0.005</button>
+    </div>
+    <label>Message (optional)<input id="tMsg" placeholder="great thread on L2 settlement" maxlength="120"></label>
+  </div>
+
+  <div class="striphead">
+    <h2>Creators</h2>
+    <span id="pCount">—</span>
+  </div>
+  <div class="people" id="people"></div>
+
+  <div class="mine" id="mine" style="display:none">
+    <div>
+      <div class="lbl">Your creator account</div>
+      <h3 id="myHandle">—</h3>
+      <div class="nums">
+        <div><small>Received</small><b id="myRecv">0</b></div>
+        <div><small>Tips</small><b id="myCount">0</b></div>
+        <div><small>Withdrawable</small><b id="myBal">0</b></div>
+      </div>
+    </div>
+    <button class="send" id="withdrawBtn">Withdraw BOT</button>
+  </div>
+
+  <div class="striphead">
+    <h2>The feed</h2>
+    <span id="tCount">—</span>
+  </div>
+  <div class="feed" id="feed"></div>
+
+  <section class="composer" style="margin-top:34px">
+    <h3>Claim a handle</h3>
+    <div class="crow">
+      <label>Handle<input id="rHandle" placeholder="@yourname" maxlength="40"></label>
+      <button class="send" id="regBtn" style="align-self:end">Register</button>
+    </div>
+    <p style="font-size:12px;color:var(--mut);margin:0;line-height:1.6">One handle per address, permanent. Registering is free apart from gas — it just makes your address discoverable to tippers.</p>
+  </section>
+
+  <footer>
+    <div class="fl">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20s-7-4.4-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.6C19 15.6 12 20 12 20Z" stroke="#db2777" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.6 11.4h4.8" stroke="#7c3aed" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span><b>BOT Chain</b> · Social Tipping</span>
+    </div>
+    <div class="fr">
+      <span>Chain ID 677</span>
+      <span class="mono">0xad80E12Aa6765a427Dc9BA76060578336A67716a</span>
+      <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain Website ↗</a>
+      <a href="https://scan.botchain.ai/" target="_blank" rel="noopener">BOTScan Explorer ↗</a>
+    </div>
+  </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="importmap">{"imports":{"ethers":"https://esm.sh/ethers@6.13.2"}}</script>
+<script type="module">
+import { ethers } from 'ethers';
+
+const ABI = [
+  'function registerCreator(string handle)',
+  'function tip(address creator, string message) payable',
+  'function withdrawTips()',
+  'function creatorStats(address who) view returns (uint256 received, uint256 count, uint256 balance, bool active)',
+  'function isCreator(address) view returns (bool)',
+  'function tipCount() view returns (uint256)',
+  'function tips(uint256) view returns (address from, address to, uint256 amount, uint256 timestamp, string message)',
+  'function creators(uint256) view returns (address owner, string handle, uint256 totalReceived, uint256 tipCount, uint256 balance, bool active)',
+  'function totalTipsVolume() view returns (uint256)'
+];
+
+const NET = { 677: { rpc: 'https://rpc.botchain.ai', hex: '0x2a5', label: 'BOT Chain Mainnet' }, 968: { rpc: 'https://rpc.bohr.life', hex: '0x3c8', label: 'BOT Chain Testnet' } };
+const CA = { 677: '0xad80E12Aa6765a427Dc9BA76060578336A67716a', 968: '' };
+
+const $ = (s) => document.querySelector(s);
+const bot = (v, d = 4) => Number(ethers.formatEther(v)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const short = (a) => (!a ? '—' : a.slice(0, 6) + '…' + a.slice(-4));
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+let chainId = 677, acct = null, signer = null, TIPS = [], CREATORS = [], busy = false;
+const ro = { 677: new ethers.JsonRpcProvider(NET[677].rpc) };
+let _t;
+function toast(m, bad) { const t = $('#toast'); t.textContent = m; t.classList.toggle('err', !!bad); t.classList.add('on'); clearTimeout(_t); _t = setTimeout(() => t.classList.remove('on'), 5000); }
+
+function reader() { return CA[chainId] ? new ethers.Contract(CA[chainId], ABI, new ethers.JsonRpcProvider(NET[chainId].rpc)) : null; }
+const STOP = Symbol('stop');
+async function collect(fn, chunk = 8, cap = 400) {
+  const out = [];
+  for (let base = 0; base < cap; base += chunk) {
+    const batch = await Promise.all(Array.from({ length: chunk }, (_, k) =>
+      Promise.resolve().then(() => fn(base + k)).catch(() => STOP)));
+    for (const r of batch) { if (r === STOP) return out; out.push(r); }
+  }
+  return out;
+}
+
+async function byCount(count, fn, chunk = 10) {
+  const out = [];
+  for (let base = 0; base < count; base += chunk) {
+    const end = Math.min(count, base + chunk);
+    const part = await Promise.all(Array.from({ length: end - base }, (_, k) => fn(base + k)));
+    out.push(...part);
+  }
+  return out;
+}
+
+function injected() { return window.ethereum || window.okxwallet || null; }
+
+async function ensureChain() {
+  const eth = injected(); if (!eth) return;
+  const n = NET[chainId];
+  try { await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: n.hex }] }); }
+  catch (e) {
+    if (e && (e.code === 4902 || e.code === -32603 || /unrecognized|not added|unknown/i.test(e.message || ''))) {
+      await eth.request({ method: 'wallet_addEthereumChain', params: [{ chainId: n.hex, chainName: n.label, nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 }, rpcUrls: [n.rpc], blockExplorerUrls: ['https://scan.botchain.ai'] }] });
+    }
+  }
+}
+
+async function connect() {
+  const eth = injected();
+  if (!eth) { toast('No browser wallet found. Install MetaMask or OKX Wallet, then reload.', true); return; }
+  try {
+    await eth.request({ method: 'eth_requestAccounts' });
+    await ensureChain();
+    signer = await new ethers.BrowserProvider(eth).getSigner();
+    acct = await signer.getAddress();
+    $('#addr').textContent = short(acct);
+    $('#dot').classList.add('on');
+    $('#connect').textContent = 'Disconnect';
+    if (eth.on) eth.on('accountsChanged', () => location.reload());
+    await load();
+    toast('Connected');
+  } catch (e) { toast('Connect failed: ' + ((e && (e.shortMessage || e.message)) || e), true); }
+}
+$('#connect').onclick = () => (acct ? location.reload() : connect());
+$('#n677').onclick = () => { chainId = 677; pn(); load(); };
+$('#n968').onclick = () => { if (!CA[968]) { toast('Testnet deployment pending.', true); return; } chainId = 968; pn(); load(); };
+function pn() { $('#n677').classList.toggle('on', chainId === 677); $('#n968').classList.toggle('on', chainId === 968); }
+
+async function load() {
+  const c = reader(); if (!c) return;
+  const [crRes, tpRes] = await Promise.allSettled([
+    collect(async (i) => {
+      const x = await c.creators(i);
+      return { owner: x.owner, handle: x.handle, received: x.totalReceived, count: Number(x.tipCount), balance: x.balance, active: x.active };
+    }),
+    (async () => {
+      const n = Number(await c.tipCount());
+      const start = Math.max(0, n - 40);
+      const idx = [];
+      for (let i = n - 1; i >= start; i--) idx.push(i);
+      return byCount(idx.length, async (k) => {
+        const t = await c.tips(idx[k]);
+        return { id: idx[k], from: t.from, to: t.to, amount: t.amount, ts: Number(t.timestamp), msg: t.message };
+      }, 10);
+    })()
+  ]);
+  CREATORS = crRes.status === 'fulfilled' ? crRes.value : [];
+  TIPS = tpRes.status === 'fulfilled' ? tpRes.value : [];
+  render();
+  if (acct) await renderMine();
+}
+
+const handleOf = (a) => {
+  const c = CREATORS.find((x) => x.owner.toLowerCase() === String(a).toLowerCase());
+  return c ? c.handle : short(a);
+};
+const initials = (h) => String(h || '?').replace(/^@/, '').slice(0, 1).toUpperCase() || '?';
+
+function render() {
+  $('#pCount').textContent = CREATORS.length + ' registered';
+  $('#tCount').textContent = TIPS.length ? TIPS.length + ' recent tips' : 'no tips yet';
+
+  $('#people').innerHTML = CREATORS.length ? CREATORS.slice().sort((a, b) => Number(b.received) - Number(a.received)).slice(0, 12).map((c) =>
+    '<div class="person"><div class="av">' + esc(initials(c.handle)) + '</div>'
+    + '<div class="h">' + esc(c.handle || short(c.owner)) + '</div>'
+    + '<div class="s"><span>' + c.count + ' tips</span><span class="mono">' + short(c.owner) + '</span></div>'
+    + '<div class="amt">' + bot(c.received) + ' BOT</div>'
+    + '<button class="chips" style="justify-content:flex-start" data-pick="' + c.owner + '"><span style="border:1px solid var(--line);border-radius:99px;padding:4px 10px;font-size:11.5px;color:var(--pink)">tip this</span></button>'
+    + '</div>'
+  ).join('') : '<div class="empty" style="grid-column:1/-1">Nobody has registered a handle yet — claim yours at the bottom of the page.</div>';
+
+  $('#feed').innerHTML = TIPS.length ? TIPS.map((t) =>
+    '<article class="tip"><div class="av">' + esc(initials(handleOf(t.from))) + '</div>'
+    + '<div class="main"><div class="line1"><b>' + esc(handleOf(t.from)) + '</b><span class="arrow">→</span><b>' + esc(handleOf(t.to)) + '</b></div>'
+    + (t.msg ? '<div class="msg">' + esc(t.msg) + '</div>' : '')
+    + '<div class="meta"><span>#' + t.id + '</span><span>' + new Date(t.ts * 1000).toLocaleString() + '</span></div></div>'
+    + '<div class="amt">' + bot(t.amount) + '</div></article>'
+  ).join('') : '<div class="empty">The feed is empty. Send the first tip above.</div>';
+}
+
+async function renderMine() {
+  const c = reader(); if (!c || !acct) return;
+  try {
+    const isC = await c.isCreator(acct);
+    if (!isC) { $('#mine').style.display = 'none'; return; }
+    const s = await c.creatorStats(acct);
+    const me = CREATORS.find((x) => x.owner.toLowerCase() === acct.toLowerCase());
+    $('#mine').style.display = 'grid';
+    $('#myHandle').textContent = me ? me.handle : short(acct);
+    $('#myRecv').textContent = bot(s.received) + ' BOT';
+    $('#myCount').textContent = s.count;
+    $('#myBal').textContent = bot(s.balance) + ' BOT';
+  } catch (e) {}
+}
+
+async function withSigner(fn) {
+  if (!signer) { await connect(); if (!signer) return; }
+  if (busy) { toast('A transaction is already in flight.'); return; }
+  busy = true;
+  try { await fn(); } finally { busy = false; }
+}
+
+async function send(method, args, value) {
+  const c = new ethers.Contract(CA[chainId], ABI, signer);
+  const tx = await c[method](...args, value !== undefined ? { value } : {});
+  toast('Sent ' + tx.hash.slice(0, 12) + '… waiting');
+  const rc = await tx.wait();
+  if (rc.status !== 1) throw new Error('reverted');
+  toast('Confirmed in block ' + rc.blockNumber);
+  await load();
+}
+
+const fail = (w, e) => toast(w + ': ' + ((e && (e.shortMessage || e.message)) || e), true);
+
+$('#quick').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-q]');
+  if (b) $('#tAmt').value = b.dataset.q;
+});
+
+$('#people').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-pick]');
+  if (b) { $('#tTo').value = b.dataset.pick; $('#tAmt').focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+});
+
+$('#tipBtn').onclick = () => {
+  const to = $('#tTo').value.trim();
+  const amt = Number($('#tAmt').value);
+  const msg = $('#tMsg').value.trim();
+  if (!ethers.isAddress(to)) { toast('Recipient address is invalid.', true); return; }
+  if (!amt || amt <= 0) { toast('Enter a tip amount.', true); return; }
+  withSigner(async () => { try { await send('tip', [to, msg], ethers.parseEther(String(amt))); $('#tMsg').value = ''; } catch (e) { fail('Tip failed', e); } });
+};
+
+$('#withdrawBtn').onclick = () => withSigner(async () => { try { await send('withdrawTips', []); } catch (e) { fail('Withdraw failed', e); } });
+
+$('#regBtn').onclick = () => {
+  const h = $('#rHandle').value.trim();
+  if (!h) { toast('Enter a handle.', true); return; }
+  withSigner(async () => { try { await send('registerCreator', [h]); $('#rHandle').value = ''; } catch (e) { fail('Register failed', e); } });
+};
+
+load();
+setInterval(load, 45000);
+</script>
+</body>
+</html>
